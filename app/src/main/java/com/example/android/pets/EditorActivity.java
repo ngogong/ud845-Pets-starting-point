@@ -15,10 +15,13 @@
  */
 package com.example.android.pets;
 
+import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,14 +29,18 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.example.android.pets.data.PetContract;
 import com.example.android.pets.data.PetContract.PetEntry;
+import com.example.android.pets.data.PetDbHelper;
 
 /**
  * Allows user to create a new pet or edit an existing one.
  */
 public class EditorActivity extends AppCompatActivity {
+
+    private static final String LOG_TAG= EditorActivity.class.getName();
 
     /** EditText field to enter the pet's name */
     private EditText mNameEditText;
@@ -114,6 +121,88 @@ public class EditorActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Helper method to insert hardcoded pet data into the database. For debugging purposes only.
+     */
+    /*
+    private void insertPet() {
+        // TODO: Insert a single pet into the database
+        PetDbHelper mDbHelper = new PetDbHelper(this);
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        // Create a new map of values, where column names are the keys
+        String name=  mNameEditText.getText().toString();
+        String breed = mBreedEditText.getText().toString();
+        int gender=PetEntry.GENDER_UNKNOWN;
+        switch (mGenderSpinner.getSelectedItem().toString()) {
+            case PetEntry.GENDER_STRING_UNKNOWN:
+                gender = PetEntry.GENDER_UNKNOWN;
+                break;
+            case PetEntry.GENDER_STRING_MALE:
+                gender = PetEntry.GENDER_MALE;
+                break;
+            case PetEntry.GENDER_STRING_FEMALE:
+                gender = PetEntry.GENDER_FEMALE;
+                break;
+        }
+        int weight= Integer.parseInt(mWeightEditText.getText().toString());
+
+
+        ContentValues values = new ContentValues();
+        values.put(PetContract.PetEntry.COLUMN_PET_NAME, name);
+        values.put(PetContract.PetEntry.COLUMN_PET_BREED, breed);
+        values.put(PetContract.PetEntry.COLUMN_PET_GENDER, gender);
+        values.put(PetContract.PetEntry.COLUMN_PET_WEIGHT, weight);
+
+// Insert the new row, returning the primary key value of the new row
+        long newRowId = db.insert(PetContract.PetEntry.TABLE_NAME, null, values);
+        if (newRowId == -1){
+            Log.e(LOG_TAG, "*************cannot insert");
+        }
+        Toast.makeText(this, "newRowId= " + newRowId + " end", Toast.LENGTH_LONG).show();
+
+    }
+
+    */
+
+    /**
+     * Get user input from editor and save new pet into database.
+     */
+    private void insertPet() {
+        // Read from input fields
+        // Use trim to eliminate leading or trailing white space
+        String nameString = mNameEditText.getText().toString().trim();
+        String breedString = mBreedEditText.getText().toString().trim();
+        String weightString = mWeightEditText.getText().toString().trim();
+        int weight = Integer.parseInt(weightString);
+
+        // Create database helper
+        PetDbHelper mDbHelper = new PetDbHelper(this);
+
+        // Gets the database in write mode
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Create a ContentValues object where column names are the keys,
+        // and pet attributes from the editor are the values.
+        ContentValues values = new ContentValues();
+        values.put(PetEntry.COLUMN_PET_NAME, nameString);
+        values.put(PetEntry.COLUMN_PET_BREED, breedString);
+        values.put(PetEntry.COLUMN_PET_GENDER, mGender);
+        values.put(PetEntry.COLUMN_PET_WEIGHT, weight);
+
+        // Insert a new row for pet in the database, returning the ID of that new row.
+        long newRowId = db.insert(PetEntry.TABLE_NAME, null, values);
+
+        // Show a toast message depending on whether or not the insertion was successful
+        if (newRowId == -1) {
+            // If the row ID is -1, then there was an error with insertion.
+            Toast.makeText(this, "Error with saving pet", Toast.LENGTH_SHORT).show();
+        } else {
+            // Otherwise, the insertion was successful and we can display a toast with the row ID.
+            Toast.makeText(this, "Pet saved with row id: " + newRowId, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // User clicked on a menu option in the app bar overflow menu
@@ -121,6 +210,8 @@ public class EditorActivity extends AppCompatActivity {
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
                 // Do nothing for now
+                insertPet();
+                finish();
                 return true;
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:

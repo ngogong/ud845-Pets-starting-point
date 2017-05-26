@@ -85,6 +85,13 @@ public final class PetContract {
         public static final int GENDER_UNKNOWN = 0;
         public static final int GENDER_MALE = 1;
         public static final int GENDER_FEMALE = 2;
+
+        public static final String GENDER_STRING_UNKNOWN="Unknown";
+        public static final String GENDER_STRING_MALE="Male";
+        public static final String GENDER_STRING_FEMALE="Female";
+
+
+
     }
 
 }

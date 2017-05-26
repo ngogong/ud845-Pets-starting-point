@@ -72,7 +72,19 @@ public class CatalogActivity extends AppCompatActivity {
 
         // Perform this raw SQL query "SELECT * FROM pets"
         // to get a Cursor that contains all rows from the pets table.
-        Cursor cursor = db.rawQuery("SELECT * FROM " + PetContract.PetEntry.TABLE_NAME, null);
+        /*
+        String[] projection = { PetContract.PetEntry.COLUMN_PET_BREED,
+                PetContract.PetEntry.COLUMN_PET_WEIGHT };
+        String selection = PetContract.PetEntry.COLUMN_PET_GENDER + " =? ";
+        String selectionArgs = new String[] { PetContract.PetEntry.GENDER_FEMALE };
+
+        Cursor c = db.query(PetContract.PetEntry.TABLE_NAME, projection,
+                selection, selectionArgs,
+                null, null, null);
+        */
+        Cursor cursor = db.query(PetContract.PetEntry.TABLE_NAME, null, null, null,null,null, null);
+
+        //Cursor cursor = db.rawQuery("SELECT * FROM " + PetContract.PetEntry.TABLE_NAME, null);
         try {
             // Display the number of rows in the Cursor (which reflects the number of rows in the
             // pets table in the database).
@@ -85,6 +97,11 @@ public class CatalogActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        displayDatabaseInfo();
+    }
 
     /**
      * Helper method to insert hardcoded pet data into the database. For debugging purposes only.
