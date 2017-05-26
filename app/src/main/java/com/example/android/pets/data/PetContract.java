@@ -47,6 +47,7 @@ public final class PetContract {
          */
         public final static String _ID = BaseColumns._ID;
 
+
         /**
          * Name of the pet.
          *
