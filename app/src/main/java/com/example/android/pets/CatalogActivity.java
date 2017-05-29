@@ -15,10 +15,12 @@
  */
 package com.example.android.pets;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -27,6 +29,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.pets.data.PetContract;
 import com.example.android.pets.data.PetDbHelper;
@@ -92,6 +95,7 @@ public class CatalogActivity extends AppCompatActivity {
                 PetContract.PetEntry.COLUMN_PET_WEIGHT };
 
         // Perform a query on the pets table
+        /*
         Cursor cursor = db.query(
                 PetContract.PetEntry.TABLE_NAME,   // The table to query
                 projection,            // The columns to return
@@ -100,6 +104,12 @@ public class CatalogActivity extends AppCompatActivity {
                 null,                  // Don't group the rows
                 null,                  // Don't filter by row groups
                 null);                   // The sort order
+        */
+        Cursor cursor = getContentResolver().query(PetContract.PetEntry.CONTENT_URI, projection,
+                null,null,null);
+
+
+
         TextView displayView = (TextView) findViewById(R.id.text_view_pet);
 
         //Cursor cursor = db.rawQuery("SELECT * FROM " + PetContract.PetEntry.TABLE_NAME, null);
@@ -163,7 +173,6 @@ public class CatalogActivity extends AppCompatActivity {
      */
     private void insertPet() {
         // TODO: Insert a single pet into the database
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
         // Create a new map of values, where column names are the keys
         ContentValues values = new ContentValues();
         values.put(PetContract.PetEntry.COLUMN_PET_NAME, "Toto");
@@ -171,10 +180,17 @@ public class CatalogActivity extends AppCompatActivity {
         values.put(PetContract.PetEntry.COLUMN_PET_GENDER, PetContract.PetEntry.GENDER_MALE);
         values.put(PetContract.PetEntry.COLUMN_PET_WEIGHT, 7);
 
+        Uri newUri = getContentResolver().insert(PetContract.PetEntry.CONTENT_URI, values);
+
+
 // Insert the new row, returning the primary key value of the new row
-        long newRowId = db.insert(PetContract.PetEntry.TABLE_NAME, null, values);
+        long newRowId= ContentUris.parseId(newUri);
+
         if (newRowId == -1){
             Log.e(LOG_TAG, "*************cannot insert");
+        } else {
+            Toast.makeText(this, getString(R.string.pet_saved), Toast.LENGTH_LONG).show();
+
         }
     }
 
