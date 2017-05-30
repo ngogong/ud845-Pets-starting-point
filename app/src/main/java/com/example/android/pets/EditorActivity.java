@@ -17,6 +17,7 @@ package com.example.android.pets;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
@@ -175,13 +176,18 @@ public class EditorActivity extends AppCompatActivity {
         String nameString = mNameEditText.getText().toString().trim();
         String breedString = mBreedEditText.getText().toString().trim();
         String weightString = mWeightEditText.getText().toString().trim();
+        if (nameString.length()==0){
+            throw new IllegalArgumentException("need to enter name");
+        }
+        if (weightString.length()==0){
+                throw new IllegalArgumentException("need to enter weight");
+        }
+
         int weight = Integer.parseInt(weightString);
 
         // Create database helper
         PetDbHelper mDbHelper = new PetDbHelper(this);
 
-        // Gets the database in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         // Create a ContentValues object where column names are the keys,
         // and pet attributes from the editor are the values.
@@ -207,6 +213,94 @@ public class EditorActivity extends AppCompatActivity {
 
     }
 
+    private int deletePets(){
+        String nameString = mNameEditText.getText().toString().trim();
+        String breedString = mBreedEditText.getText().toString().trim();
+        String weightString = mWeightEditText.getText().toString().trim();
+        String [] selectionArgs={};
+        String selection="" ;
+        boolean firstClause=false;
+
+        if (nameString.length() >0) {
+            selection = selection + PetEntry.COLUMN_PET_NAME + "=? ";
+            String [] tempString = new String[selectionArgs.length+1];
+            System.arraycopy(selectionArgs,0,tempString,0,selectionArgs.length);
+            tempString[selectionArgs.length ] = nameString;
+            selectionArgs = tempString;
+            firstClause=true;
+        }
+
+        if (breedString.length() >0) {
+            selection = selection + (firstClause ? " AND " : "" )+ PetEntry.COLUMN_PET_BREED + "=? ";
+            String [] tempString = new String[selectionArgs.length+1];
+            System.arraycopy(selectionArgs,0,tempString,0,selectionArgs.length);
+            tempString[selectionArgs.length ] = breedString;
+            selectionArgs = tempString;
+            firstClause=true;
+        }
+
+        if (weightString.length() >0) {
+            selection = selection + (firstClause ? " AND " : "" )+ PetEntry.COLUMN_PET_WEIGHT + "=? ";
+            String [] tempString = new String[selectionArgs.length+1];
+            System.arraycopy(selectionArgs,0,tempString,0,selectionArgs.length);
+            tempString[selectionArgs.length ] = weightString;
+            selectionArgs = tempString;
+            firstClause=true;
+        }
+
+        selection = selection +(firstClause ? " AND " : "" ) + PetEntry.COLUMN_PET_GENDER + "=?  ";
+        String[] tempString = new String[selectionArgs.length + 1];
+        System.arraycopy(selectionArgs,0,tempString,0,selectionArgs.length);
+        tempString[selectionArgs.length ] = String.valueOf(mGender);
+        selectionArgs = tempString;
+
+        // Define a projection that specifies which columns from the database
+        // you will actually use after this query.
+        String[] projection = {
+                PetContract.PetEntry._ID,
+                };
+
+        Cursor cursor = getContentResolver().query(PetContract.PetEntry.CONTENT_URI, projection,
+                selection,selectionArgs,null);
+        int idColumnIndex = cursor.getColumnIndex(PetContract.PetEntry._ID);
+        int numOfRowDelete=0;
+
+        if (cursor.getCount()==1){
+            //delete only one row
+            // Gets the database in write mode
+            cursor.moveToNext();
+            long currentID = (long) cursor.getInt(idColumnIndex);
+            Uri newUri = ContentUris.withAppendedId(PetEntry.CONTENT_URI, currentID);
+            selection = PetEntry._ID + "=? ";
+            String [] newSelectionArgs = { String.valueOf(currentID) };
+            numOfRowDelete = getContentResolver().delete(newUri,selection, newSelectionArgs);
+            if (numOfRowDelete == 1){
+                Toast.makeText(this, getString(R.string.pet_deleted, numOfRowDelete), Toast.LENGTH_LONG).show();
+                Log.e(LOG_TAG, "numofrowdelete == 1 pet_deleted");
+            } else {
+                Toast.makeText(this, getString(R.string.pet_cannot_deleted), Toast.LENGTH_LONG).show();
+                Log.e(LOG_TAG, "numofrowdelete == 1 pet_cannot_deleted");
+            }
+        } else if (cursor.getCount() > 1) {
+            //delete multiple rows
+            numOfRowDelete = getContentResolver().delete(PetEntry.CONTENT_URI,selection, selectionArgs);
+            if (numOfRowDelete > 1){
+                Toast.makeText(this, getString(R.string.pet_deleted, numOfRowDelete), Toast.LENGTH_LONG).show();
+                Log.e(LOG_TAG, "numofrowdelete > 1 pet_deleted");
+            } else {
+                Toast.makeText(this, getString(R.string.pet_cannot_deleted), Toast.LENGTH_LONG).show();
+                Log.e(LOG_TAG, "numofrowdelete > 1 pet_cannot_deleted");
+            }
+        } else {
+            Toast.makeText(this, getString(R.string.pet_cannot_deleted), Toast.LENGTH_LONG).show();
+            Log.e(LOG_TAG, "cusor == 0  pet_cannot_deleted");
+        }
+
+        cursor.close();
+        return numOfRowDelete;
+
+
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -221,6 +315,8 @@ public class EditorActivity extends AppCompatActivity {
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
                 // Do nothing for now
+                deletePets();
+                finish();
                 return true;
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:

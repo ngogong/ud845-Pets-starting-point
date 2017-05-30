@@ -60,4 +60,7 @@
     <string name="gender_female">Female</string>
 
     <string name="pet_saved">Pet saved</string>
+    <string name="pet_cannot_deleted">Pet cannot deleted</string>
+    <string name="pet_number_cannot_deleted">Pet cannot deleted</string>
+    <string name="pet_deleted"> %1$d of Pets record have been deleted</string>
 </resources>

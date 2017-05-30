@@ -216,6 +216,15 @@ public class CatalogActivity extends AppCompatActivity {
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
                 // Do nothing for now
+                int numOfRowDelete = getContentResolver().delete(PetContract.PetEntry.CONTENT_URI,null, null);
+                if (numOfRowDelete > 1){
+                    Toast.makeText(this, getString(R.string.pet_deleted, numOfRowDelete), Toast.LENGTH_LONG).show();
+                    Log.e(LOG_TAG, "numofrowdelete > 1 pet_deleted");
+                } else {
+                    Toast.makeText(this, getString(R.string.pet_cannot_deleted), Toast.LENGTH_LONG).show();
+                    Log.e(LOG_TAG, "numofrowdelete > 1 pet_cannot_deleted");
+                }
+                displayDatabaseInfo();
                 return true;
         }
         return super.onOptionsItemSelected(item);
