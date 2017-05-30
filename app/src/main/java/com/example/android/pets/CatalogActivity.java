@@ -28,10 +28,12 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.pets.data.PetContract;
+import com.example.android.pets.data.PetCursorAdapter;
 import com.example.android.pets.data.PetDbHelper;
 
 /**
@@ -57,7 +59,7 @@ public class CatalogActivity extends AppCompatActivity {
             }
         });
         mDbHelper = new PetDbHelper(this);
-        displayDatabaseInfo();
+        displayDatabaseInfoListView();
         //mDb = mDbHelper.getReadableDatabase();
 
     }
@@ -110,7 +112,8 @@ public class CatalogActivity extends AppCompatActivity {
 
 
 
-        TextView displayView = (TextView) findViewById(R.id.text_view_pet);
+        // original one TextView displayView = (TextView) findViewById(R.id.text_view_pet);
+        TextView displayView = (TextView) findViewById(R.id.name);
 
         //Cursor cursor = db.rawQuery("SELECT * FROM " + PetContract.PetEntry.TABLE_NAME, null);
         try {
@@ -162,10 +165,38 @@ public class CatalogActivity extends AppCompatActivity {
 
     }
 
+
+    /**
+     * Temporary helper method to display information in the onscreen TextView about the state of
+     * the pets database.
+     */
+    private void displayDatabaseInfoListView() {
+        // To access our database, we instantiate our subclass of SQLiteOpenHelper
+        // and pass the context, which is the current activity.
+
+        // Create and/or open a database to read from it
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        String[] projection = {
+                PetContract.PetEntry._ID,
+                PetContract.PetEntry.COLUMN_PET_NAME,
+                PetContract.PetEntry.COLUMN_PET_BREED,
+                PetContract.PetEntry.COLUMN_PET_GENDER,
+                PetContract.PetEntry.COLUMN_PET_WEIGHT };
+
+        Cursor cursor = getContentResolver().query(PetContract.PetEntry.CONTENT_URI, projection,
+                null,null,null);
+        ListView displayView = (ListView) findViewById(R.id.list);
+
+        PetCursorAdapter petCursorAdapter = new PetCursorAdapter(this, cursor);
+        displayView.setAdapter(petCursorAdapter);
+
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
-        displayDatabaseInfo();
+        displayDatabaseInfoListView();
     }
 
     /**
@@ -211,7 +242,7 @@ public class CatalogActivity extends AppCompatActivity {
             case R.id.action_insert_dummy_data:
                 // Do nothing for now
                 insertPet();
-                displayDatabaseInfo();
+                displayDatabaseInfoListView();
                 return true;
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
@@ -224,7 +255,7 @@ public class CatalogActivity extends AppCompatActivity {
                     Toast.makeText(this, getString(R.string.pet_cannot_deleted), Toast.LENGTH_LONG).show();
                     Log.e(LOG_TAG, "numofrowdelete > 1 pet_cannot_deleted");
                 }
-                displayDatabaseInfo();
+                displayDatabaseInfoListView();
                 return true;
         }
         return super.onOptionsItemSelected(item);
