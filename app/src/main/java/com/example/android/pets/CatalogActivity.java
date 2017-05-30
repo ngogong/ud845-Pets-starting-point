@@ -187,7 +187,9 @@ public class CatalogActivity extends AppCompatActivity {
         Cursor cursor = getContentResolver().query(PetContract.PetEntry.CONTENT_URI, projection,
                 null,null,null);
         ListView displayView = (ListView) findViewById(R.id.list);
-
+        // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
+        View emptyView = findViewById(R.id.empty_view);
+        displayView.setEmptyView(emptyView);
         PetCursorAdapter petCursorAdapter = new PetCursorAdapter(this, cursor);
         displayView.setAdapter(petCursorAdapter);
 
